@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import Filters from "./Filters";
 import PetBrowser from "./PetBrowser";
@@ -6,6 +6,35 @@ import PetBrowser from "./PetBrowser";
 function App() {
   const [pets, setPets] = useState([]);
   const [filters, setFilters] = useState({ type: "all" });
+  
+  function handleFindPetsClick(){
+    const fetchUrl = filters.type === "all" ? "http://localhost:3001/pets" : `http://localhost:3001/pets?type=${filters.type}`
+
+    fetch(fetchUrl)
+    .then(r=>r.json())
+    .then(petData=>{
+      setPets(petData)
+    })
+
+  }
+
+  function handleChangeType(newType){
+    setFilters({ type: newType})
+  }
+
+  function handleAdoptPet(adoptedPetId){
+    const newPetArr = pets.map(pet=>{
+      if(pet.id === adoptedPetId){
+        return {
+          ...pet,
+          isAdopted: true
+        }
+      } else {
+        return pet
+      }
+    })
+    setPets(newPetArr)
+  }
 
   return (
     <div className="ui container">
@@ -15,10 +44,10 @@ function App() {
       <div className="ui container">
         <div className="ui grid">
           <div className="four wide column">
-            <Filters />
+            <Filters onChangeType={handleChangeType} onFindPetsClick={handleFindPetsClick}/>
           </div>
           <div className="twelve wide column">
-            <PetBrowser />
+            <PetBrowser pets={pets} onAdoptPet={handleAdoptPet}/>
           </div>
         </div>
       </div>
